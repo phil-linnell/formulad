@@ -1,0 +1,26 @@
+{
+  "name": "fd",
+  "description": "",
+  "version": "0.1.0",
+  "author": "phil-linnell",
+  "dependencies": {
+    "@emotion/core": "^10.0.27",
+    "gatsby": "^2.19.12",
+    "gatsby-plugin-emotion": "^4.1.22",
+    "normalize.css": "^8.0.1",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0"
+  },
+  "devDependencies": {
+    "prettier": "^1.19.1"
+  },
+  "scripts": {
+    "build": "gatsby build",
+    "develop": "gatsby develop",
+    "format": "prettier --write \"**/*.{js,jsx,json,md}\"",
+    "start": "npm run develop",
+    "serve": "gatsby serve",
+    "clean": "gatsby clean",
+    "production": "gatsby clean && gatsby build && gatsby serve"
+  }
+}

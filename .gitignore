@@ -1,0 +1,11 @@
+.DS_Store
+
+# gatsby files
+.cache/
+public
+
+# Dependency directories
+node_modules/
+
+# dotenv environment variable files
+.env*
