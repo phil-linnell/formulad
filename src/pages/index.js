@@ -132,7 +132,8 @@ class Index extends Component {
       engagedGear: 0,
       blackResult: 0,
       damage: 18,
-      log: []
+      log: [],
+      currentGear: 0
     }
   }
 
@@ -152,7 +153,8 @@ class Index extends Component {
 
       this.setState({
         result,
-        log: [{ result, colour, gear }].concat(log)
+        log: [{ result, colour, gear }].concat(log),
+        currentGear: gear
       })
     }
   }
@@ -166,12 +168,12 @@ class Index extends Component {
   }
 
   render() {
-    const { result, blackResult, engagedGear, damage, log } = this.state;
+    const { result, blackResult, engagedGear, damage, log, currentGear } = this.state;
 
     const renderDice = dice
       .map(die => {
-        const { gear, type, colour } = die;
-        const disableGear = engagedGear + 1 < gear || gear + 3 < engagedGear;
+        const { gear, type, colour, description } = die;
+        const disableGear = currentGear + 1 < gear || gear + 3 < currentGear;
         const neutral = engagedGear === 0;
         const enableGear2 = engagedGear === 0 && gear === 2;
 
@@ -216,6 +218,7 @@ class Index extends Component {
             <button onClick={this.changeGear(gear)} key={type}>
               <div css={cssGearLabel}>GEAR</div>
               <div css={cssGearNo}>{gear}</div>
+              <div css={cssGearLabel}>{description}</div>
             </button>
           </li>
         );
@@ -304,13 +307,18 @@ class Index extends Component {
 
     const diceScreen = engagedGear > 0 && (
       <div css={cssDiceScreen}>
-        <div>{dice[engagedGear - 1].description}</div>
         <div>
           <button onClick={
             this.rollDice(dice[engagedGear - 1].sides, dice[engagedGear - 1].colour, dice[engagedGear - 1].gear)
           }>
             {result === 0 ? <span>GO</span> : result}
           </button>
+          <div>
+            &nbsp;
+            {currentGear === engagedGear + 2 && "1 damage"}
+            {currentGear === engagedGear + 3 && "2 damage"}
+            &nbsp;
+          </div>
         </div>
       </div>
     );
@@ -321,7 +329,7 @@ class Index extends Component {
         <header css={cssHeader}>
           <h1>FORMULA D</h1>
           <div><em>Log: </em>{renderLog}</div>
-          <div><em>Av. speed: </em>{isNaN(averageSpeed) ? "0" : averageSpeed}&nbsp;&nbsp;&nbsp;&nbsp;<em>Current gear: </em>{log.length > 0 ? log[0].gear : "N"}</div>
+          <div><em>Av. speed: </em>{isNaN(averageSpeed) ? "0" : averageSpeed}&nbsp;&nbsp;&nbsp;&nbsp;<em>Current gear: </em>{currentGear}</div>
         </header>
         <section css={cssContent}>
           <ul css={cssSidebar}>{renderDice}</ul>
