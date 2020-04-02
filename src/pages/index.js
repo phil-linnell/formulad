@@ -33,13 +33,14 @@ const cssIndex = css`
 `;
 
 const cssHeader = css`
-  height: 80px;
+  height: 100px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   background: #000;
   margin-bottom: 10px;
   padding-left: 15px;
+  font-size: 14px;
 
   h1 {
     font-size: 18px;
@@ -47,21 +48,27 @@ const cssHeader = css`
     margin: 0;
     padding: 0;
   }
+
+  em {
+    color: #888;
+    font-style: normal;
+    margin-right: 5px;
+  }
 `;
 
 const cssFooter = css`
   display: flex;
   flex-direction: row;
   align-items: center;
-  height: 80px;
+  height: 70px;
   line-height: 30px;
-  // background: rgba(255,255,255,.1);
   margin-top: 10px;
 `;
 
 const cssDamage = css`
   display: flex;
   flex-direction: row;
+  align-items: center;
   margin-left: 5vw;
   margin-right: 30px;
 
@@ -122,7 +129,7 @@ class Index extends Component {
 
     this.state = {
       result: 0,
-      currentGear: 0,
+      engagedGear: 0,
       blackResult: 0,
       damage: 18,
       log: []
@@ -133,19 +140,19 @@ class Index extends Component {
     return () => {
       this.setState({
         result: 0,
-        currentGear: gear
+        engagedGear: gear
       });
     }
   }
 
-  rollDice(sides, colour) {
+  rollDice(sides, colour, gear) {
     return () => {
       const result = sides[Math.floor(Math.random() * sides.length)];
       const { log } = this.state;
 
       this.setState({
         result,
-        log: [{ result, colour }].concat(log)
+        log: [{ result, colour, gear }].concat(log)
       })
     }
   }
@@ -159,17 +166,17 @@ class Index extends Component {
   }
 
   render() {
-    const { result, blackResult, currentGear, damage, log } = this.state;
+    const { result, blackResult, engagedGear, damage, log } = this.state;
 
     const renderDice = dice
       .map(die => {
         const { gear, type, colour } = die;
-        const disableGear = currentGear + 1 < gear || gear + 3 < currentGear;
-        const neutral = currentGear === 0;
-        const enableGear2 = currentGear === 0 && gear === 2;
+        const disableGear = engagedGear + 1 < gear || gear + 3 < engagedGear;
+        const neutral = engagedGear === 0;
+        const enableGear2 = engagedGear === 0 && gear === 2;
 
         const cssGear = css`
-          transform: translate(${currentGear === gear ? "5vw" : "0"});
+          transform: translate(${engagedGear === gear ? "5vw" : "0"});
           transition: transform .1s ease-in-out;
           flex: 1;
 
@@ -191,11 +198,23 @@ class Index extends Component {
           font-size: 16px;
           font-weight: bold;
           margin-bottom: 5px;
+          // border-radius: 50%;
+          // width: 30px;
+          // margin: 0 auto;
+          // padding: 5px 0;
+          // ${(log.length > 0 && log[0].gear === gear) && `border: 1px solid white;`}
+          // border-color: ${gear === 1 && !disableGear ? "#000" : "#fff"};
+        `;
+
+        const cssGearLabel = css`
+          opacity: 0.6;
+          margin-bottom: 5px;
         `;
 
         return (
           <li css={cssGear} key={`Gear ${gear}`}>
             <button onClick={this.changeGear(gear)} key={type}>
+              <div css={cssGearLabel}>GEAR</div>
               <div css={cssGearNo}>{gear}</div>
             </button>
           </li>
@@ -209,9 +228,8 @@ class Index extends Component {
       align-items: center;
       justify-content: center;
       
-      background-color: ${currentGear > 0 ? dice[currentGear - 1].colour : "transparent"};
-      transition: background-color .1s ease-in-out .1s;
-      color: ${currentGear === 1 ? "#000" : "#fff"};
+      background-color: ${engagedGear > 0 ? dice[engagedGear - 1].colour : "transparent"};
+      color: ${engagedGear === 1 ? "#000" : "#fff"};
     `;
 
     const cssStartScreen = css`
@@ -235,12 +253,22 @@ class Index extends Component {
 
       button {
         border: none;
-        background-color: rgba(0,0,0,.1);
+        // background-color: rgba(255,255,255,.2);
+        background: transparent;
         width: 140px;
         height: 140px;
+        // border-radius: 50%;
         font-size: 100px;
-        margin-top: 50px;
-        color: ${currentGear === 1 ? "#000" : "#fff"};
+        margin: 50px 0;
+        color: ${engagedGear === 1 ? "#000" : "#fff"};
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        span {
+          font-weight: bold;
+          font-size: 40px;
+        }
       }
     `;
 
@@ -248,7 +276,7 @@ class Index extends Component {
 
     const cssBlackDie = css`
       width: 25vw;
-      height: 80px;
+      height: 70px;
       background: black;
       border: none;
       color: white;
@@ -274,12 +302,14 @@ class Index extends Component {
       </div>
     );
 
-    const diceScreen = currentGear > 0 && (
+    const diceScreen = engagedGear > 0 && (
       <div css={cssDiceScreen}>
-        <div>{dice[currentGear - 1].description}</div>
+        <div>{dice[engagedGear - 1].description}</div>
         <div>
-          <button onClick={this.rollDice(dice[currentGear - 1].sides, dice[currentGear - 1].colour)}>
-            {result === 0 ? "Roll" : result}
+          <button onClick={
+            this.rollDice(dice[engagedGear - 1].sides, dice[engagedGear - 1].colour, dice[engagedGear - 1].gear)
+          }>
+            {result === 0 ? <span>GO</span> : result}
           </button>
         </div>
       </div>
@@ -290,16 +320,14 @@ class Index extends Component {
         <Global styles={cssGlobalStyles} />
         <header css={cssHeader}>
           <h1>FORMULA D</h1>
-          <div>
-            {renderLog}
-            <span>Av. {isNaN(averageSpeed) ? "0" : averageSpeed}</span>
-          </div>
+          <div><em>Log: </em>{renderLog}</div>
+          <div><em>Av. speed: </em>{isNaN(averageSpeed) ? "0" : averageSpeed}&nbsp;&nbsp;&nbsp;&nbsp;<em>Current gear: </em>{log.length > 0 ? log[0].gear : "N"}</div>
         </header>
         <section css={cssContent}>
           <ul css={cssSidebar}>{renderDice}</ul>
           <div css={cssMain}>
             <div>
-              {currentGear === 0 ? startScreen : diceScreen}
+              {engagedGear === 0 ? startScreen : diceScreen}
             </div>
           </div>
         </section>
