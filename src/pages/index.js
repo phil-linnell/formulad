@@ -33,7 +33,7 @@ const cssIndex = css`
 `;
 
 const cssHeader = css`
-  height: 100px;
+  height: 90px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -197,28 +197,36 @@ class Index extends Component {
         `;
 
         const cssGearNo = css`
-          font-size: 16px;
+          font-size: 19px;
           font-weight: bold;
-          margin-bottom: 5px;
           // border-radius: 50%;
           // width: 30px;
           // margin: 0 auto;
-          // padding: 5px 0;
+          padding: 2px 0;
           // ${(log.length > 0 && log[0].gear === gear) && `border: 1px solid white;`}
           // border-color: ${gear === 1 && !disableGear ? "#000" : "#fff"};
         `;
 
-        const cssGearLabel = css`
-          opacity: 0.6;
-          margin-bottom: 5px;
+        const cssGearOdds = css`
+          opacity: 0.8;
         `;
+
+        let numberEnding = "th";
+        if (gear === 1) {
+          numberEnding = "st"
+        }
+        if (gear === 2) {
+          numberEnding = "nd"
+        }
+        if (gear === 3) {
+          numberEnding = "rd"
+        }
 
         return (
           <li css={cssGear} key={`Gear ${gear}`}>
             <button onClick={this.changeGear(gear)} key={type}>
-              <div css={cssGearLabel}>GEAR</div>
-              <div css={cssGearNo}>{gear}</div>
-              <div css={cssGearLabel}>{description}</div>
+              <div css={cssGearNo}>{gear}{numberEnding}</div>
+              <div css={cssGearOdds}>{description}</div>
             </button>
           </li>
         );
@@ -328,8 +336,8 @@ class Index extends Component {
         <Global styles={cssGlobalStyles} />
         <header css={cssHeader}>
           <h1>FORMULA D</h1>
+          <div><em>Av. speed: </em>{isNaN(averageSpeed) ? "0" : averageSpeed}&nbsp;&nbsp;&nbsp;&nbsp;<em>Current gear: </em>{currentGear === 0 ? "N" : currentGear}</div>
           <div><em>Log: </em>{renderLog}</div>
-          <div><em>Av. speed: </em>{isNaN(averageSpeed) ? "0" : averageSpeed}&nbsp;&nbsp;&nbsp;&nbsp;<em>Current gear: </em>{currentGear}</div>
         </header>
         <section css={cssContent}>
           <ul css={cssSidebar}>{renderDice}</ul>
