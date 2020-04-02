@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { Global, css } from "@emotion/core";
 import dice from "../utils/dice";
+import doomFaces from "../assets/doom-faces.png";
 
 const cssGlobalStyles = css`
   * {
@@ -59,8 +60,8 @@ const cssHeader = css`
 const cssFooter = css`
   display: flex;
   flex-direction: row;
-  align-items: center;
-  height: 70px;
+  align-items: stretch;
+  height: 80px;
   line-height: 30px;
   margin-top: 10px;
 `;
@@ -70,7 +71,6 @@ const cssDamage = css`
   flex-direction: row;
   align-items: center;
   margin-left: 5vw;
-  margin-right: 30px;
 
   button {
     background-color: #333;
@@ -94,11 +94,6 @@ const cssDamageLabel = css`
   font-size: 13px;
   color: #aaa;
   width: 60px;
-`;
-
-const cssDamageDisplay = css`
-  width: 50px;
-  height: 50px;
 `;
 
 const cssContent = css`
@@ -126,6 +121,7 @@ class Index extends Component {
     this.changeGear = this.changeGear.bind(this);
     this.rollDice = this.rollDice.bind(this);
     this.blackRollDice = this.blackRollDice.bind(this);
+    this.startingDice = this.startingDice.bind(this);
 
     this.state = {
       result: 0,
@@ -164,6 +160,34 @@ class Index extends Component {
       this.setState({
         blackResult: sides[Math.floor(Math.random() * sides.length)]
       });
+    }
+  }
+
+  startingDice(sides) {
+    const { log } = this.state;
+    return () => {
+      const result = sides[Math.floor(Math.random() * sides.length)];
+      if (result < 10) {
+        this.setState({
+          log: [{ result: 0, colour: "#fff", gear: 0 }].concat(log),
+          currentGear: 0,
+          engagedGear: 0,
+          blackResult: result
+        })
+      } else if (result === 20) {
+        this.setState({
+          log: [{ result: 4, colour: "#fbdc4b", gear: 1 }].concat(log),
+          currentGear: 1,
+          engagedGear: 2,
+          blackResult: result
+        });
+      } else {
+        this.setState({
+          currentGear: 0,
+          engagedGear: 1,
+          blackResult: result
+        });
+      }
     }
   }
 
@@ -287,11 +311,48 @@ class Index extends Component {
 
     const cssBlackDie = css`
       width: 25vw;
-      height: 70px;
+      // flex: 1;
+      // height: 70px;
       background: black;
       border: none;
       color: white;
       font-size: 18px;
+
+      > div {
+        font-size: 10px;
+        color: #888;
+      }
+    `;
+
+    const cssLog = css`
+      max-width: 97%;
+      white-space: nowrap;
+      overflow: hidden;
+    `;
+
+    const cssDamageDisplay = css`
+      width: 38px;
+      height: 50px;
+      overflow: hidden;
+      margin-left: 20px;
+
+      img {
+        height: 100%;
+        transform: translate(-1px);
+        ${damage < 15 && "transform: translate(-40px);"}
+        ${damage < 12 && "transform: translate(-79px);"}
+        ${damage < 9 && "transform: translate(-118px);"}
+        ${damage < 5 && "transform: translate(-157px);"}
+        ${damage < 1 && "transform: translate(-196px);"}
+      }
+    `;
+
+    const cssStartButton = css`
+      background: black;
+      padding: 10px 20px;
+      border: none;
+      color: white;
+      margin-top: 20px;
     `;
 
     const renderLog = log.map((x, i) => (
@@ -300,15 +361,33 @@ class Index extends Component {
 
     const averageSpeed = (log.reduce((acc, a) => acc + a.result, 0) / log.length).toFixed(1);
 
+    const cssStalled = css`
+      margin-top: 20px;
+      color: white !important;
+
+      > span {
+        width: auto !important;
+        color: red !important;
+      }
+    `;
+
+    let renderStartResult;
+    if (blackResult > 0) {
+      if (blackResult < 10) {
+        renderStartResult = <div css={cssStalled}><span>STALLED!!</span> Miss a go.</div>;
+      }
+    }
+
     const startScreen = (
       <div css={cssStartScreen}>
         <div>Neutral</div>
         <div>
-          Roll Black dice<br />
           <span>1</span>Miss first turn<br />
           <span>2 - 19</span>Engage 1st Gear<br />
           <span>20</span>Move 4 spaces <br />
           <span>{" "}</span>(change to 2nd next go)
+          <button onClick={this.startingDice(blackDie.sides)} css={cssStartButton}>START</button>
+          <div>{renderStartResult}</div>
         </div>
       </div>
     );
@@ -337,7 +416,7 @@ class Index extends Component {
         <header css={cssHeader}>
           <h1>FORMULA D</h1>
           <div><em>Av. speed: </em>{isNaN(averageSpeed) ? "0" : averageSpeed}&nbsp;&nbsp;&nbsp;&nbsp;<em>Current gear: </em>{currentGear === 0 ? "N" : currentGear}</div>
-          <div><em>Log: </em>{renderLog}</div>
+          <div css={cssLog}><em>Log: </em>{renderLog}</div>
         </header>
         <section css={cssContent}>
           <ul css={cssSidebar}>{renderDice}</ul>
@@ -350,13 +429,16 @@ class Index extends Component {
         <footer css={cssFooter}>
           <button onClick={this.blackRollDice(blackDie.sides)} css={cssBlackDie}>
             {blackResult}
+            <div>Damage <br />Dice</div>
           </button>
           <div css={cssDamage}>
             <div css={cssDamageLabel}>DAMAGE:</div>
             <button onClick={() => this.setState({ damage: damage - 1})}>-</button>
             <div css={cssDamageNumber}>{damage}</div>
             <button onClick={() => this.setState({ damage: damage + 1})}>+</button>
-            <div css={cssDamageDisplay} />
+            <div css={cssDamageDisplay}>
+              <img src={doomFaces} alt="" />
+            </div>
           </div>
         </footer>
       </div>
