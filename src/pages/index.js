@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { Component } from "react";
 import { Global, css } from "@emotion/core";
 import dice from "../utils/dice";
 
@@ -35,16 +35,17 @@ const cssIndex = css`
 const cssHeader = css`
   height: 80px;
   display: flex;
-  align-items: center;
-  // background: rgba(255,255,255,.1);
-  margin-bottom: 5px;
+  flex-direction: column;
+  justify-content: center;
+  background: #000;
+  margin-bottom: 10px;
+  padding-left: 15px;
 
   h1 {
     font-size: 18px;
     font-weight: normal;
     margin: 0;
     padding: 0;
-    margin-left: 20px;
   }
 `;
 
@@ -55,13 +56,13 @@ const cssFooter = css`
   height: 80px;
   line-height: 30px;
   // background: rgba(255,255,255,.1);
-  margin-top: 5px;
+  margin-top: 10px;
 `;
 
 const cssDamage = css`
   display: flex;
   flex-direction: row;
-  margin-left: auto;
+  margin-left: 5vw;
   margin-right: 30px;
 
   button {
@@ -77,16 +78,20 @@ const cssDamage = css`
   }
 `;
 
-const cssDamageDisplay = css`
+const cssDamageNumber = css`
   text-align: center;
-  width: 40px;
+  width: 35px;
 `;
 
 const cssDamageLabel = css`
-  font-size: 14px;
+  font-size: 13px;
   color: #aaa;
-  margin-right: 10px;
   width: 60px;
+`;
+
+const cssDamageDisplay = css`
+  width: 50px;
+  height: 50px;
 `;
 
 const cssContent = css`
@@ -107,133 +112,212 @@ const cssSidebar = css`
   padding: 0;
 `;
 
-const Index = () => {
-  const [result, rollDice] = useState(0);
-  const [currentGear, changeGear] = useState(0);
-  const [damage, handleDamage] = useState(18);
-  const [blackResult, blackRollDice] = useState(0);
+class Index extends Component {
+  constructor(props) {
+    super(props);
 
-  const renderDice = dice
-    .map(die => {
-      const { gear, type, sides, description } = die;
-      const name = `Gear ${gear}`;
-      const disableGear = currentGear + 1 < gear || gear + 3 < currentGear;
-      const neutral = currentGear === 0;
-      const enableGear2 = currentGear === 0 && gear === 2;
+    this.changeGear = this.changeGear.bind(this);
+    this.rollDice = this.rollDice.bind(this);
+    this.blackRollDice = this.blackRollDice.bind(this);
 
-      const handleRollDice = () => {
-        changeGear(gear);
-        return rollDice(sides[Math.floor(Math.random() * sides.length)]);
-      }
-
-      const cssGear = css`
-        ${currentGear === gear && "margin-left: 5vw;"}
-        flex: 1;
-
-        button {
-          height: 100%;
-          width: 25vw;
-          border: none;
-          padding: 0;
-          background-color: ${die.colour};
-          opacity: ${(disableGear || neutral) ? 0.5 : 1};
-          ${(disableGear || neutral) && "filter: grayscale(1);"}
-          ${disableGear && "pointer-events: none;"}
-          ${enableGear2 && "pointer-events: auto;"}
-        }
-      `;
-
-      return (
-        <li css={cssGear} key={name}>
-          <button onClick={handleRollDice} key={type}>
-            <div>{name}</div>
-            <div>{description}</div>
-          </button>
-        </li>
-      );
-    })
-    .splice(0, dice.length - 1);
-
-  const cssMain = css`
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 100px;
-    background-color: ${currentGear > 0 ? dice[currentGear - 1].colour : "transparent"};
-
-    div {
-      // text-align: center;
-      font-size: 20px;
+    this.state = {
+      result: 0,
+      currentGear: 0,
+      blackResult: 0,
+      damage: 18,
+      log: []
     }
-    div > div:last-child {
-      font-size: 14px;
-      color: #666;
-
-      span {
-        display: inline-block;
-        color: white;
-        width: 40px;
-      }
-    }
-  `;
-
-  console.log(currentGear);
-
-  const blackDie = dice[dice.length - 1];
-
-  const cssBlackDie = css`
-    width: 25vw;
-    height: 80px;
-    background: black;
-    border: none;
-    color: white;
-    font-size: 18px;
-  `;
-
-  const handleBlackRollDice = () => {
-    return blackRollDice(blackDie.sides[Math.floor(Math.random() * blackDie.sides.length)]);
   }
 
-  return (
-    <div css={cssIndex}>
-      <Global styles={cssGlobalStyles} />
-      <header css={cssHeader}>
-        <h1>FORMULA D DICE</h1>
-      </header>
-      <section css={cssContent}>
-        <ul css={cssSidebar}>{renderDice}</ul>
-        <div css={cssMain}>
-          <p>
-            {result === 0 ? (
-              <div>
-                <div>Neutral</div>
-                <div>
-                  Roll Black dice<br />
-                  <span>1</span>Miss first turn<br />
-                  <span>2 - 19</span>Engage 1st Gear<br />
-                  <span>20</span>Move 4 spaces <br />
-                  <span>{" "}</span>(change to 2nd next go)
-                </div>
-              </div>
-            ) : result}
-          </p>
+  changeGear(gear) {
+    return () => {
+      this.setState({
+        result: 0,
+        currentGear: gear
+      });
+    }
+  }
+
+  rollDice(sides, colour) {
+    return () => {
+      const result = sides[Math.floor(Math.random() * sides.length)];
+      const { log } = this.state;
+
+      this.setState({
+        result,
+        log: [{ result, colour }].concat(log)
+      })
+    }
+  }
+
+  blackRollDice(sides) {
+    return () => {
+      this.setState({
+        blackResult: sides[Math.floor(Math.random() * sides.length)]
+      });
+    }
+  }
+
+  render() {
+    const { result, blackResult, currentGear, damage, log } = this.state;
+
+    const renderDice = dice
+      .map(die => {
+        const { gear, type, colour } = die;
+        const disableGear = currentGear + 1 < gear || gear + 3 < currentGear;
+        const neutral = currentGear === 0;
+        const enableGear2 = currentGear === 0 && gear === 2;
+
+        const cssGear = css`
+          transform: translate(${currentGear === gear ? "5vw" : "0"});
+          transition: transform .1s ease-in-out;
+          flex: 1;
+
+          button {
+            height: 100%;
+            width: 25vw;
+            border: none;
+            padding: 0;
+            background-color: ${colour};
+            opacity: ${(disableGear || neutral) ? 0.5 : 1};
+            ${(disableGear || neutral) && "filter: grayscale(1);"}
+            ${disableGear && "pointer-events: none;"}
+            ${enableGear2 && "pointer-events: auto;"}
+            color: ${gear === 1 && !disableGear ? "#000" : "#fff"};
+          }
+        `;
+
+        const cssGearNo = css`
+          font-size: 16px;
+          font-weight: bold;
+          margin-bottom: 5px;
+        `;
+
+        return (
+          <li css={cssGear} key={`Gear ${gear}`}>
+            <button onClick={this.changeGear(gear)} key={type}>
+              <div css={cssGearNo}>{gear}</div>
+            </button>
+          </li>
+        );
+      })
+      .splice(0, dice.length - 1);
+
+    const cssMain = css`
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      background-color: ${currentGear > 0 ? dice[currentGear - 1].colour : "transparent"};
+      transition: background-color .1s ease-in-out .1s;
+      color: ${currentGear === 1 ? "#000" : "#fff"};
+    `;
+
+    const cssStartScreen = css`
+      font-size: 20px;
+      
+      div:last-child {
+        font-size: 14px;
+        color: #888;
+
+        span {
+          display: inline-block;
+          width: 40px;
+          color: #fff;
+        }
+      }
+    `;
+
+    const cssDiceScreen = css`
+      font-size: 20px;
+      text-align: center;
+
+      button {
+        border: none;
+        background-color: rgba(0,0,0,.1);
+        width: 140px;
+        height: 140px;
+        font-size: 100px;
+        margin-top: 50px;
+        color: ${currentGear === 1 ? "#000" : "#fff"};
+      }
+    `;
+
+    const blackDie = dice[dice.length - 1];
+
+    const cssBlackDie = css`
+      width: 25vw;
+      height: 80px;
+      background: black;
+      border: none;
+      color: white;
+      font-size: 18px;
+    `;
+
+    const renderLog = log.map((x, i) => (
+      <span css={css`color: ${x.colour}; margin-right: 5px;`} key={`key${i}`}>{x.result}</span>
+    ));
+
+    const averageSpeed = (log.reduce((acc, a) => acc + a.result, 0) / log.length).toFixed(1);
+
+    const startScreen = (
+      <div css={cssStartScreen}>
+        <div>Neutral</div>
+        <div>
+          Roll Black dice<br />
+          <span>1</span>Miss first turn<br />
+          <span>2 - 19</span>Engage 1st Gear<br />
+          <span>20</span>Move 4 spaces <br />
+          <span>{" "}</span>(change to 2nd next go)
         </div>
-      </section>
-      <footer css={cssFooter}>
-        <button onClick={handleBlackRollDice} css={cssBlackDie}>
-          {blackResult}
-        </button>
-        
-        <div css={cssDamage}>
-          <div css={cssDamageLabel}>DAMAGE:</div>
-          <button onClick={() => handleDamage(damage - 1)}>-</button>
-          <div css={cssDamageDisplay}>{damage}</div>
-          <button onClick={() => handleDamage(damage + 1)}>+</button>
+      </div>
+    );
+
+    const diceScreen = currentGear > 0 && (
+      <div css={cssDiceScreen}>
+        <div>{dice[currentGear - 1].description}</div>
+        <div>
+          <button onClick={this.rollDice(dice[currentGear - 1].sides, dice[currentGear - 1].colour)}>
+            {result === 0 ? "Roll" : result}
+          </button>
         </div>
-      </footer>
-    </div>
-  );
+      </div>
+    );
+
+    return (
+      <div css={cssIndex}>
+        <Global styles={cssGlobalStyles} />
+        <header css={cssHeader}>
+          <h1>FORMULA D</h1>
+          <div>
+            {renderLog}
+            <span>Av. {isNaN(averageSpeed) ? "0" : averageSpeed}</span>
+          </div>
+        </header>
+        <section css={cssContent}>
+          <ul css={cssSidebar}>{renderDice}</ul>
+          <div css={cssMain}>
+            <div>
+              {currentGear === 0 ? startScreen : diceScreen}
+            </div>
+          </div>
+        </section>
+        <footer css={cssFooter}>
+          <button onClick={this.blackRollDice(blackDie.sides)} css={cssBlackDie}>
+            {blackResult}
+          </button>
+          <div css={cssDamage}>
+            <div css={cssDamageLabel}>DAMAGE:</div>
+            <button onClick={() => this.setState({ damage: damage - 1})}>-</button>
+            <div css={cssDamageNumber}>{damage}</div>
+            <button onClick={() => this.setState({ damage: damage + 1})}>+</button>
+            <div css={cssDamageDisplay} />
+          </div>
+        </footer>
+      </div>
+    );
+  }
 }
 
 export default Index;
