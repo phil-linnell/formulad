@@ -167,7 +167,7 @@ class Index extends Component {
     const { log } = this.state;
     return () => {
       const result = sides[Math.floor(Math.random() * sides.length)];
-      if (result < 10) {
+      if (result === 1) {
         this.setState({
           log: [{ result: 0, colour: "#fff", gear: 0 }].concat(log),
           currentGear: 0,
@@ -373,7 +373,7 @@ class Index extends Component {
 
     let renderStartResult;
     if (blackResult > 0) {
-      if (blackResult < 10) {
+      if (blackResult === 1) {
         renderStartResult = <div css={cssStalled}><span>STALLED!!</span> Miss a go.</div>;
       }
     }
