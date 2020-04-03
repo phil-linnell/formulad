@@ -5,6 +5,7 @@ import formulaDLogo from "../assets/formula-d-logo.jpg";
 import doomFaces from "../assets/doom-faces.png";
 import ordinal from "../utils/ordinal";
 import getNumber from "../utils/random-but-different";
+import d6Sound from "../assets/d6.m4a";
 
 const cssGlobalStyles = css`
   * {
@@ -133,6 +134,8 @@ class Index extends Component {
     this.blackRollDice = this.blackRollDice.bind(this);
     this.startingDice = this.startingDice.bind(this);
 
+    this.diceSound = React.createRef();
+
     this.state = {
       result: 0,
       engagedGear: 0,
@@ -169,6 +172,8 @@ class Index extends Component {
         rolling: true
       });
 
+      this.diceSound.current.play();
+
       const isGodMode = (gear === 5 || gear === 6) && result === Math.max.apply(null, dice[gear - 1].sides);
 
       setTimeout(() => {
@@ -180,7 +185,7 @@ class Index extends Component {
           rolling: false,
           godMode: isGodMode
         });
-      }, 800);
+      }, 500);
     }
   }
 
@@ -518,6 +523,11 @@ class Index extends Component {
               <img src={doomFaces} alt="" />
             </div>
           </div>
+          <audio
+            css={css`display: none;`}
+            src={d6Sound}
+            ref={this.diceSound}
+          / >
         </footer>
       </div>
     );
