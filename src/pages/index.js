@@ -5,7 +5,11 @@ import formulaDLogo from "../assets/formula-d-logo.jpg";
 import doomFaces from "../assets/doom-faces.png";
 import ordinal from "../utils/ordinal";
 import getNumber from "../utils/random-but-different";
-import d6Sound from "../assets/d6.m4a";
+import sfxd4 from "../assets/d4.m4a";
+import sfxd6 from "../assets/d6.m4a";
+import sfxd8 from "../assets/d8.m4a";
+import sfxd12 from "../assets/d12.m4a";
+import sfxd20 from "../assets/d20.m4a";
 
 const cssGlobalStyles = css`
   * {
@@ -134,7 +138,11 @@ class Index extends Component {
     this.blackRollDice = this.blackRollDice.bind(this);
     this.startingDice = this.startingDice.bind(this);
 
-    this.diceSound = React.createRef();
+    this.sfxd4 = React.createRef();
+    this.sfxd6 = React.createRef();
+    this.sfxd8 = React.createRef();
+    this.sfxd12 = React.createRef();
+    this.sfxd20 = React.createRef();
 
     this.state = {
       result: 0,
@@ -172,7 +180,21 @@ class Index extends Component {
         rolling: true
       });
 
-      this.diceSound.current.play();
+      if (gear === 1) {
+        this.sfxd4.current.play();
+      }
+      if (gear === 2) {
+        this.sfxd6.current.play();
+      }
+      if (gear === 3) {
+        this.sfxd8.current.play();
+      }
+      if (gear === 4) {
+        this.sfxd12.current.play();
+      }
+      if (gear === 5 || gear === 6) {
+        this.sfxd20.current.play();
+      }
 
       const isGodMode = (gear === 5 || gear === 6) && result === Math.max.apply(null, dice[gear - 1].sides);
 
@@ -198,6 +220,7 @@ class Index extends Component {
       this.setState({
         blackRolling: true
       });
+      this.sfxd20.current.play();
 
       setTimeout(() => {
         clearInterval(this.blackTimer);
@@ -525,9 +548,29 @@ class Index extends Component {
           </div>
           <audio
             css={css`display: none;`}
-            src={d6Sound}
-            ref={this.diceSound}
+            src={sfxd4}
+            ref={this.sfxd4}
           / >
+          <audio
+            css={css`display: none;`}
+            src={sfxd6}
+            ref={this.sfxd6}
+          />
+          <audio
+            css={css`display: none;`}
+            src={sfxd8}
+            ref={this.sfxd8}
+          />
+          <audio
+            css={css`display: none;`}
+            src={sfxd12}
+            ref={this.sfxd12}
+          />
+          <audio
+            css={css`display: none;`}
+            src={sfxd20}
+            ref={this.sfxd20}
+          />
         </footer>
       </div>
     );
