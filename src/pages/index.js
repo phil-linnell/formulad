@@ -382,6 +382,7 @@ class Index extends Component {
       <div css={cssStartScreen}>
         <div>Neutral</div>
         <div>
+          <span>Click 'START' to roll the black/damage dice:</span>
           <span>1</span>Miss first turn<br />
           <span>2 - 19</span>Engage 1st Gear<br />
           <span>20</span>Move 4 spaces <br />
