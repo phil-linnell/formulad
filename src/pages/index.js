@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { Global, css } from "@emotion/core";
 import dice from "../utils/dice";
+import formulaDLogo from "../assets/formula-d-logo.jpg";
 import doomFaces from "../assets/doom-faces.png";
 
 const cssGlobalStyles = css`
@@ -48,12 +49,18 @@ const cssHeader = css`
     font-weight: normal;
     margin: 0;
     padding: 0;
+    width: 140px;
+    line-height: 1;
   }
 
   em {
     color: #888;
     font-style: normal;
     margin-right: 5px;
+  }
+
+  img {
+    width: 100%;
   }
 `;
 
@@ -382,11 +389,11 @@ class Index extends Component {
       <div css={cssStartScreen}>
         <div>Neutral</div>
         <div>
-          <span>Click 'START' to roll the black/damage dice:</span>
+          <div>Click 'START' to roll the damage dice:</div>
           <span>1</span>Miss first turn<br />
-          <span>2 - 19</span>Engage 1st Gear<br />
+          <span>2 - 19</span>Engage 1st Gear and roll<br />
           <span>20</span>Move 4 spaces <br />
-          <span>{" "}</span>(change to 2nd next go)
+          <span>{" "}</span>(change to 2nd for next turn)
           <button onClick={this.startingDice(blackDie.sides)} css={cssStartButton}>START</button>
           <div>{renderStartResult}</div>
         </div>
@@ -415,7 +422,7 @@ class Index extends Component {
       <div css={cssIndex}>
         <Global styles={cssGlobalStyles} />
         <header css={cssHeader}>
-          <h1>FORMULA D</h1>
+          <h1><img src={formulaDLogo} alt="Formula D" /></h1>
           <div><em>Av. speed: </em>{isNaN(averageSpeed) ? "0" : averageSpeed}&nbsp;&nbsp;&nbsp;&nbsp;<em>Current gear: </em>{currentGear === 0 ? "N" : currentGear}</div>
           <div css={cssLog}><em>Log: </em>{renderLog}</div>
         </header>

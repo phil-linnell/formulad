@@ -16,7 +16,7 @@ module.exports = {
         short_name: `FormulaD`,
         start_url: `/`,
         background_color: `#000000`,
-        theme_color: `#cccccc`,
+        theme_color: `#000000`,
         display: `standalone`,
       },
     },
