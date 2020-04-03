@@ -8,6 +8,17 @@ module.exports = {
           families: ["Catamaran"]
         }
       }
+    },
+    {
+      resolve: `gatsby-plugin-manifest`,
+      options: {
+        name: `FormulaD Companion App`,
+        short_name: `FormulaD`,
+        start_url: `/`,
+        background_color: `#000000`,
+        theme_color: `#cccccc`,
+        display: `standalone`,
+      },
     }
   ]
 }
