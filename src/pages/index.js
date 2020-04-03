@@ -3,6 +3,8 @@ import { Global, css } from "@emotion/core";
 import dice from "../utils/dice";
 import formulaDLogo from "../assets/formula-d-logo.jpg";
 import doomFaces from "../assets/doom-faces.png";
+import ordinal from "../utils/ordinal";
+import getNumber from "../utils/random-but-different";
 
 const cssGlobalStyles = css`
   * {
@@ -136,7 +138,12 @@ class Index extends Component {
       blackResult: 0,
       damage: 18,
       log: [],
-      currentGear: 0
+      currentGear: 0,
+      rolling: false,
+      blackRolling: false,
+      pool: 0,
+      blackPool: 0,
+      godMode: false
     }
   }
 
@@ -144,7 +151,8 @@ class Index extends Component {
     return () => {
       this.setState({
         result: 0,
-        engagedGear: gear
+        engagedGear: gear,
+        godMode: false
       });
     }
   }
@@ -153,20 +161,45 @@ class Index extends Component {
     return () => {
       const result = sides[Math.floor(Math.random() * sides.length)];
       const { log } = this.state;
-
+      this.timer = setInterval(() => {
+        this.setState({ pool: getNumber(sides) });
+      }, 80);
       this.setState({
-        result,
-        log: [{ result, colour, gear }].concat(log),
-        currentGear: gear
-      })
+        rolling: true
+      });
+
+      const isGodMode = (gear === 5 || gear === 6) && result === Math.max.apply(null, dice[gear - 1].sides);
+
+      setTimeout(() => {
+        clearInterval(this.timer);
+        this.setState({
+          result,
+          log: [{ result, colour, gear }].concat(log),
+          currentGear: gear,
+          rolling: false,
+          godMode: isGodMode
+        });
+      }, 800);
     }
   }
 
   blackRollDice(sides) {
     return () => {
+      const blackResult = sides[Math.floor(Math.random() * sides.length)];
+      this.blackTimer = setInterval(() => {
+        this.setState({ blackPool: getNumber(sides) });
+      }, 80);
       this.setState({
-        blackResult: sides[Math.floor(Math.random() * sides.length)]
+        blackRolling: true
       });
+
+      setTimeout(() => {
+        clearInterval(this.blackTimer);
+        this.setState({
+          blackResult,
+          blackRolling: false
+        });
+      }, 800);
     }
   }
 
@@ -199,7 +232,7 @@ class Index extends Component {
   }
 
   render() {
-    const { result, blackResult, engagedGear, damage, log, currentGear } = this.state;
+    const { result, blackResult, engagedGear, damage, log, currentGear, rolling, pool, blackPool, blackRolling, godMode } = this.state;
 
     const renderDice = dice
       .map(die => {
@@ -242,21 +275,10 @@ class Index extends Component {
           opacity: 0.8;
         `;
 
-        let numberEnding = "th";
-        if (gear === 1) {
-          numberEnding = "st"
-        }
-        if (gear === 2) {
-          numberEnding = "nd"
-        }
-        if (gear === 3) {
-          numberEnding = "rd"
-        }
-
         return (
           <li css={cssGear} key={`Gear ${gear}`}>
             <button onClick={this.changeGear(gear)} key={type}>
-              <div css={cssGearNo}>{gear}{numberEnding}</div>
+              <div css={cssGearNo}>{ordinal(gear)}</div>
               <div css={cssGearOdds}>{description}</div>
             </button>
           </li>
@@ -324,10 +346,12 @@ class Index extends Component {
       border: none;
       color: white;
       font-size: 18px;
+      font-weight: bold;
 
       > div {
         font-size: 10px;
         color: #888;
+        font-weight: normal;
       }
     `;
 
@@ -351,8 +375,11 @@ class Index extends Component {
         ${damage < 9 && "transform: translate(-118px);"}
         ${damage < 5 && "transform: translate(-157px);"}
         ${damage < 1 && "transform: translate(-196px);"}
+        ${godMode && "transform: translate(-234px);"}
       }
     `;
+
+    console.log(dice[currentGear - 1]);
 
     const cssStartButton = css`
       background: black;
@@ -378,6 +405,24 @@ class Index extends Component {
       }
     `;
 
+    const cssResultAnimation = css`
+      animation: popAnim .3s 1 ease-in-out;
+      font-size: 46px !important;
+      transform: scale(1.5);
+
+      @keyframes popAnim {
+        0% {
+          transform: scale(0.8);
+        }
+        70% {
+          transform: scale(1.7);
+        }
+        100% {
+          transform: scale(1.5);
+        }
+      }
+    `;
+
     let renderStartResult;
     if (blackResult > 0) {
       if (blackResult === 1) {
@@ -400,13 +445,35 @@ class Index extends Component {
       </div>
     );
 
+    let renderDiceDisplay;
+    if (rolling === true) {
+      renderDiceDisplay = <span>{pool}</span>;
+    } else {
+      if (result === 0) {
+        renderDiceDisplay = <span>GO</span>;
+      } else {
+        renderDiceDisplay = <span css={cssResultAnimation}>{result}</span>;
+      }
+    }
+
+    let renderBlackDiceDisplay;
+    if (blackRolling === true) {
+      renderBlackDiceDisplay = <span>{blackPool}</span>;
+    } else {
+      if (blackResult === 0) {
+        renderBlackDiceDisplay = <span>GO</span>;
+      } else {
+        renderBlackDiceDisplay = <span>{blackResult}</span>;
+      }
+    }
+
     const diceScreen = engagedGear > 0 && (
       <div css={cssDiceScreen}>
         <div>
           <button onClick={
             this.rollDice(dice[engagedGear - 1].sides, dice[engagedGear - 1].colour, dice[engagedGear - 1].gear)
           }>
-            {result === 0 ? <span>GO</span> : result}
+            {renderDiceDisplay}
           </button>
           <div>
             &nbsp;
@@ -423,7 +490,7 @@ class Index extends Component {
         <Global styles={cssGlobalStyles} />
         <header css={cssHeader}>
           <h1><img src={formulaDLogo} alt="Formula D" /></h1>
-          <div><em>Av. speed: </em>{isNaN(averageSpeed) ? "0" : averageSpeed}&nbsp;&nbsp;&nbsp;&nbsp;<em>Current gear: </em>{currentGear === 0 ? "N" : currentGear}</div>
+          <div><em>Av. speed: </em>{isNaN(averageSpeed) ? "0" : averageSpeed}&nbsp;&nbsp;&nbsp;&nbsp;<em>Current gear: </em>{currentGear === 0 ? "N" : ordinal(currentGear)}</div>
           <div css={cssLog}><em>Log: </em>{renderLog}</div>
         </header>
         <section css={cssContent}>
@@ -436,7 +503,7 @@ class Index extends Component {
         </section>
         <footer css={cssFooter}>
           <button onClick={this.blackRollDice(blackDie.sides)} css={cssBlackDie}>
-            {blackResult}
+            {renderBlackDiceDisplay}
             <div>Damage <br />Dice</div>
           </button>
           <div css={cssDamage}>
