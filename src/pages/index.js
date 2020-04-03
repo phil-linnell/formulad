@@ -76,6 +76,7 @@ const cssFooter = css`
 `;
 
 const cssDamage = css`
+  flex: 1;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -362,10 +363,11 @@ class Index extends Component {
     `;
 
     const cssDamageDisplay = css`
+      margin-left: auto;
+      margin-right: 15px;
       width: 38px;
       height: 50px;
       overflow: hidden;
-      margin-left: 20px;
 
       img {
         height: 100%;
@@ -382,6 +384,7 @@ class Index extends Component {
     console.log(dice[currentGear - 1]);
 
     const cssStartButton = css`
+      display: block;
       background: black;
       padding: 10px 20px;
       border: none;
